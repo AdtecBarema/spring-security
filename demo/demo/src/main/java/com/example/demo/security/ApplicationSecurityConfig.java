@@ -19,5 +19,13 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated ()
                 .and ()
                 .httpBasic ();
+                /* httpBasic():
+                 is based on username, password.
+                 Everytime client forward request,
+                 password and usernames are also supposed to be appended in to the request
+                  antMathchers(): can be used to whitelist some of resources which can be accessed by any user
+                  regardless of authentication
+                  */
     }
+
 }
