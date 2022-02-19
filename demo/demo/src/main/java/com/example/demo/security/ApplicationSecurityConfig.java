@@ -28,8 +28,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure (HttpSecurity http) throws Exception {
         http
                 .authorizeRequests ()
-                .antMatchers ("/", "index", "/css/x", "/js/x")
-                .permitAll ()
+                .antMatchers ("/", "index", "/css/x", "/js/x").permitAll ()
+                .antMatchers ("/api/**").hasRole (ApplicationUserRole.STUDENT.name ()) // This helps to implement role based access
                 .anyRequest ()
                 .authenticated ()
                 .and ()
