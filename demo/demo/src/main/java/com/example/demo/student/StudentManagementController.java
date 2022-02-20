@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/students")
-public class StudentController {
+public class StudentManagementController {
 
     private static  final List <Student> STUDENTS= Arrays.asList (
             new Student (1,"James, Bond"),
