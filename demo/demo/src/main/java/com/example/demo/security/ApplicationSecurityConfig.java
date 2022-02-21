@@ -3,7 +3,6 @@ package com.example.demo.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,10 +12,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import static com.example.demo.security.ApplicationUserPermission.*;
+import javax.servlet.http.Cookie;
+import java.net.CookieStore;
+import java.util.concurrent.TimeUnit;
+
 import static com.example.demo.security.ApplicationUserRole.*;
+
 
 @Configuration
 @EnableWebSecurity
@@ -26,65 +32,71 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public ApplicationSecurityConfig (PasswordEncoder passwordEncoder) {
+    public ApplicationSecurityConfig(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    protected void configure (HttpSecurity http) throws Exception {
+    protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf ().disable ()
-                .authorizeRequests ()
-                .antMatchers ("/", "index", "/css/x", "/js/x").permitAll ()
-                .antMatchers ("/api/**").hasRole (STUDENT.name ()) // This helps to implement role based access
-                .anyRequest ()
-                .authenticated ()
-                .and ()
-                .formLogin ();//form based authentication
-//                .httpBasic ();
-                /* httpBasic():
-                 is based on username, password.
-                 Everytime client forward request,
-                 password and usernames are also supposed to be appended in to the request
-                  antMathchers(): can be used to whitelist some of resources which can be accessed by any user
-                  regardless of authentication
-
-                  - Chapter3: Order does matter with AntMatchers: The order antMatchers are added is REALLY matters and we got to be careful!!!
-
-                  - Chapter 4: CSRF: Cross Site Request Forgery,
-                                References:
-                                            https://www.baeldung.com/spring-security-csrf
-                                            https://docs.spring.io/spring-security/site/docs/5.0.x/reference/html/csrf.html
-
-                  */
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
+                .antMatchers("/api/**").hasRole(STUDENT.name())
+                .anyRequest()
+                .authenticated()
+                .and()
+                .formLogin()
+                    .loginPage("/login")
+                    .permitAll()
+                    .defaultSuccessUrl("/courses", true)
+                    .passwordParameter("password")
+                    .usernameParameter("username")
+                .and()
+                .rememberMe()
+                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21))
+                    .key("somethingverysecured")
+                    .rememberMeParameter("remember-me")
+                .and()
+                .logout()
+                    .logoutUrl("/logout")
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET")) // https://docs.spring.io/spring-security/site/docs/4.2.12.RELEASE/apidocs/org/springframework/security/config/annotation/web/configurers/LogoutConfigurer.html
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID", "remember-me")
+                    .logoutSuccessUrl("/login");
     }
 
     @Override
     @Bean
-    protected UserDetailsService userDetailsService () {
-        UserDetails annaSmith = User.builder ()
-                .username ("annasmith")
-                .password (passwordEncoder.encode ("password"))
-//                .roles (STUDENT.name ()) //ROLE_STUDENT
-                .authorities (STUDENT.getGrantedAuthorities ())
-                .build ();
+    protected UserDetailsService userDetailsService() {
+        UserDetails annaSmithUser = User.builder()
+                .username("annasmith")
+                .password(passwordEncoder.encode("password"))
+                .authorities(STUDENT.getGrantedAuthorities())
+                .build();
 
-        UserDetails lindaUser=User.builder ()
-                .username ("linda")
-                .password (passwordEncoder.encode ("password123"))
-//                .roles (ADMIN.name ())//ROLE_ADMIN
-                .authorities (ADMIN.getGrantedAuthorities ())
-                .build ();
+        UserDetails lindaUser = User.builder()
+                .username("linda")
+                .password(passwordEncoder.encode("password123"))
+                .authorities(ADMIN.getGrantedAuthorities())
+                .build();
 
-        UserDetails tomUser=User.builder ()
-                .username ("tom")
-                .password (passwordEncoder.encode ("password123"))
-//                .roles (ADMINTRINEE.name ())//ROLE_ADMINTRNEE
-                .authorities (ADMINTRINEE.getGrantedAuthorities ())
-                .build ();
+        UserDetails tomUser = User.builder()
+                .username("tom")
+                .password(passwordEncoder.encode("password123"))
+                .authorities(ADMINTRAINEE.getGrantedAuthorities())
+                .build();
 
-        return new InMemoryUserDetailsManager (
-                annaSmith,lindaUser, tomUser
+        return new InMemoryUserDetailsManager(
+                annaSmithUser,
+                lindaUser,
+                tomUser
         );
+
+    }
+
+    public static void main(String[] args) {
+        System.out.println(TimeUnit.DAYS.toSeconds(1));
     }
 }
