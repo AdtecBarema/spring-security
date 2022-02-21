@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static com.example.demo.security.ApplicationUserPermission.*;
 import static com.example.demo.security.ApplicationUserRole.*;
@@ -32,14 +33,12 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure (HttpSecurity http) throws Exception {
         http
+                //.csrf ().csrfTokenRepository (CookieCsrfTokenRepository.withHttpOnlyFalse ())
+               // .and ()
                 .csrf ().disable ()
                 .authorizeRequests ()
                 .antMatchers ("/", "index", "/css/x", "/js/x").permitAll ()
                 .antMatchers ("/api/**").hasRole (STUDENT.name ()) // This helps to implement role based access
-//                .antMatchers (HttpMethod.DELETE,"/management/api/**").hasAuthority (COURSE_WRITE.getPermission ())
-//                .antMatchers (HttpMethod.POST,"/management/api/**").hasAuthority (COURSE_WRITE.getPermission ())
-//                .antMatchers (HttpMethod.PUT,"/management/api/**").hasAuthority (COURSE_WRITE.getPermission ())
-//                .antMatchers (HttpMethod.GET,"/management/api/**").hasAnyRole (ADMIN.name (), ADMINTRINEE.name ())
                 .anyRequest ()
                 .authenticated ()
                 .and ()
@@ -52,6 +51,14 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                   regardless of authentication
 
                   - Chapter3: Order does matter with AntMatchers: The order antMatchers are added is REALLY matters and we got to be careful!!!
+
+                  - Chapter 4: CSRF: Cross Site Request Forgery,
+                                References:
+                                            https://www.baeldung.com/spring-security-csrf
+                                            https://docs.spring.io/spring-security/site/docs/5.0.x/reference/html/csrf.html
+
+
+
                   */
     }
 
