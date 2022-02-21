@@ -33,8 +33,6 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure (HttpSecurity http) throws Exception {
         http
-                //.csrf ().csrfTokenRepository (CookieCsrfTokenRepository.withHttpOnlyFalse ())
-               // .and ()
                 .csrf ().disable ()
                 .authorizeRequests ()
                 .antMatchers ("/", "index", "/css/x", "/js/x").permitAll ()
@@ -42,7 +40,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest ()
                 .authenticated ()
                 .and ()
-                .httpBasic ();
+                .formLogin ();//form based authentication
+//                .httpBasic ();
                 /* httpBasic():
                  is based on username, password.
                  Everytime client forward request,
@@ -56,8 +55,6 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                                 References:
                                             https://www.baeldung.com/spring-security-csrf
                                             https://docs.spring.io/spring-security/site/docs/5.0.x/reference/html/csrf.html
-
-
 
                   */
     }
