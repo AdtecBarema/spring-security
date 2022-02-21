@@ -48,6 +48,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                  password and usernames are also supposed to be appended in to the request
                   antMathchers(): can be used to whitelist some of resources which can be accessed by any user
                   regardless of authentication
+
+                  - Chapter3: Order does matter with AntMatchers: The order antMatchers are added is REALLY matters and we got to be careful!!!
                   */
     }
 
